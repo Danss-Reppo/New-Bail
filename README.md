@@ -6,7 +6,6 @@
 ![NPM Downloads](https://img.shields.io/npm/dw/%40whiskeysockets%2Fbaileys?label=npm&color=%23CB3837)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/whiskeysockets/baileys)
 ![GitHub License](https://img.shields.io/github/license/whiskeysockets/baileys)
-![Discord](https://img.shields.io/discord/725839806084546610?label=discord&color=%235865F2)
 ![GitHub Repo stars](https://img.shields.io/github/stars/whiskeysockets/baileys)
 ![GitHub forks](https://img.shields.io/github/forks/whiskeysockets/baileys)
 
@@ -59,7 +58,7 @@ import makeWASocket from '@whiskeysockets/baileys'
 
 # Links
 
-- [Whatsapp](https://wa.me/)
+- [Whatsapp](https://wa.me/6281233971426)
 - [Telegram](https://-)
 
 # Index
@@ -521,6 +520,307 @@ const interactiveMessage = {
 }
 
 await dz.sendMessage(id, interactiveMessage, { quoted: null })
+```
+### Const Script Start.js Function Button! 
+
+1. Function `Buttons` in `Index.js` or `Start.js`
+    - If there is an error or you have any questions, you can chat: [Whatsapp](https://wa.me/6281233971426?text=assalamualaikum+bang+(tuliskan+erornya))
+    - This code is only in start.js or index.js or in your script that runs your WhatsApp bot:
+
+```ts
+require("./settings") 
+const {
+default:
+makeWASocket,
+DisconnectReason,
+makeInMemoryStore,
+jidDecode,
+proto,
+getContentType,
+useMultiFileAuthState,
+downloadContentFromMessage,
+generateWAMessageFromContent,
+prepareWAMessageMedia
+} = require("baileys");
+```
+
+### Const Function Button
+
+```ts
+    const getMessage = async (key) => {
+		if (store) {
+			const msg = await store.loadMessage(key.remoteJid, key.id);
+			return msg?.message || ''
+		}
+		return {
+			conversation: 'Halo Saya Dzi Bot'
+		}
+	}
+	const uploadFile = {
+		upload: dz.waUploadToServer
+	}
+	dz.sendButtonMsg = async (jid, content = {}, options = {}) => {
+		const { text, caption, footer = '', headerType = 1, ai, contextInfo = {}, buttons = [], mentions = [], ...media } = content;
+		const msg = await generateWAMessageFromContent(jid, {
+			viewOnceMessage: {
+				message: {
+					messageContextInfo: {
+						deviceListMetadata: {},
+						deviceListMetadataVersion: 2,
+					},
+					buttonsMessage: {
+						...(media && typeof media === 'object' && Object.keys(media).length > 0 ? await generateWAMessageContent(media, {
+							upload: dz.waUploadToServer
+						}) : {}),
+						contentText: text || caption || '',
+						footerText: footer,
+						buttons,
+						headerType: media && Object.keys(media).length > 0 ? Math.max(...Object.keys(media).map((a) => ({ document: 3, image: 4, video: 5, location: 6 })[a] || headerType)) : headerType,
+						contextInfo: {
+							...contextInfo,
+							...options.contextInfo,
+							mentionedJid: options.mentions || mentions,
+							...(options.quoted ? {
+								stanzaId: options.quoted.key.id,
+								remoteJid: options.quoted.key.remoteJid,
+								participant: options.quoted.key.participant || options.quoted.key.remoteJid,
+								fromMe: options.quoted.key.fromMe,
+								quotedMessage: options.quoted.message
+							} : {})
+						}
+					}
+				}
+			}
+		}, {});
+		const hasil = await dz.relayMessage(msg.key.remoteJid, msg.message, {
+			messageId: msg.key.id,
+			additionalNodes: [{
+				tag: 'biz',
+				attrs: {},
+				content: [{
+					tag: 'interactive',
+					attrs: {
+						type: 'native_flow',
+						v: '1'
+					},
+					content: [{
+						tag: 'native_flow',
+						attrs: {
+							name: 'quick_reply'
+						}
+					}]
+				}]
+			}, ...(ai ? [{ attrs: { biz_bot: '1' }, tag: 'bot' }] : [])]
+		})
+		return hasil
+	}
+
+	dz.sendButtonText = (jid, buttons = [], text, footer, quoted = '', options = {
+		contextInfo: {
+			mentionedJid: parseMention(text),
+		}
+	}) => {
+		let button = []
+		for (let i = 0; i < buttons.length; i++) {
+			button.push({
+				"name": buttons[i].name,
+				"buttonParamsJson": JSON.parse(JSON.stringify(buttons[i].buttonParamsJson))
+			})
+		}
+		let msg = generateWAMessageFromContent(jid, {
+			viewOnceMessage: {
+				message: {
+					'messageContextInfo': {
+						'deviceListMetadata': {},
+						'deviceListMetadataVersion': 2
+					},
+					interactiveMessage: proto.Message.InteractiveMessage.create({
+						...options,
+						mentionedJid: parseMention(text),
+						body: proto.Message.InteractiveMessage.Body.create({
+							text: text
+						}),
+						footer: proto.Message.InteractiveMessage.Footer.create({
+							text: footer
+						}),
+						header: proto.Message.InteractiveMessage.Header.create({
+							title: "",
+							hasMediaAttachment: false
+						}),
+						nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+							buttons: button,
+						})
+					})
+				}
+			}
+		}, {
+			quoted: quoted
+		})
+
+		dz.relayMessage(msg.key.remoteJid, msg.message, {
+			messageId: msg.key.id
+		})
+		return msg
+	}
+	
+	dz.sendButtonImage = async (jid, image, buttons = [], text, footer, quoted = '', options = {
+		contextInfo: {
+			mentionedJid: parseMention(text),
+		}
+	}) => {
+		let button = []
+		for (let i = 0; i < buttons.length; i++) {
+			button.push({
+				"name": buttons[i].name,
+				"buttonParamsJson": JSON.parse(JSON.stringify(buttons[i].buttonParamsJson))
+			})
+		}
+		var imageMessage = await prepareWAMessageMedia({
+				image: image,
+			},
+			uploadFile,
+		);
+		let msg = generateWAMessageFromContent(jid, {
+			viewOnceMessage: {
+				message: {
+					'messageContextInfo': {
+						'deviceListMetadata': {},
+						'deviceListMetadataVersion': 2
+					},
+					interactiveMessage: proto.Message.InteractiveMessage.create({
+						...options,
+						body: proto.Message.InteractiveMessage.Body.create({
+							text: ""
+						}),
+						footer: proto.Message.InteractiveMessage.Footer.create({
+							text: footer
+						}),
+						header: proto.Message.InteractiveMessage.Header.create({
+							title: text,
+							subtitle: text,
+							hasMediaAttachment: true,
+							imageMessage: imageMessage.imageMessage
+						}),
+						nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+							buttons: button,
+						})
+					})
+				}
+			}
+		}, {
+			quoted: quoted
+		})
+
+		dz.relayMessage(msg.key.remoteJid, msg.message, {
+			messageId: msg.key.id
+		})
+		return msg
+	}
+
+	dz.sendButtonVideo = async (jid, video, buttons = [], text, footer, quoted = '', options = {
+		contextInfo: {
+			mentionedJid: parseMention(text),
+		}
+	}) => {
+		let button = []
+		for (let i = 0; i < buttons.length; i++) {
+			button.push({
+				"name": buttons[i].name,
+				"buttonParamsJson": JSON.parse(JSON.stringify(buttons[i].buttonParamsJson))
+			})
+		}
+		var videoMessage = await prepareWAMessageMedia({
+				video: video,
+			},
+			uploadFile,
+		);
+		let msg = generateWAMessageFromContent(jid, {
+			viewOnceMessage: {
+				message: {
+					'messageContextInfo': {
+						'deviceListMetadata': {},
+						'deviceListMetadataVersion': 2
+					},
+					interactiveMessage: proto.Message.InteractiveMessage.create({
+						...options,
+						body: proto.Message.InteractiveMessage.Body.create({
+							text: ""
+						}),
+						footer: proto.Message.InteractiveMessage.Footer.create({
+							text: footer
+						}),
+						header: proto.Message.InteractiveMessage.Header.create({
+							title: text,
+							subtitle: text,
+							videoMessage: videoMessage.videoMessage,
+							hasMediaAttachment: true
+						}),
+						nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+							buttons: button,
+						})
+					})
+				}
+			}
+		}, {
+			quoted: quoted
+		})
+
+		dz.relayMessage(msg.key.remoteJid, msg.message, {
+			messageId: msg.key.id
+		})
+		return msg
+	}
+
+	dz.sendButtonDocument = async (jid, document = {}, buttons = [], text, footer, quoted = '', options = {
+		contextInfo: {
+			mentionedJid: parseMention(text),
+		}
+	}) => {
+		let button = []
+		for (let i = 0; i < buttons.length; i++) {
+			button.push({
+				"name": buttons[i].name,
+				"buttonParamsJson": JSON.parse(JSON.stringify(buttons[i].buttonParamsJson))
+			})
+		}
+		let msg = generateWAMessageFromContent(jid, {
+			viewOnceMessage: {
+				message: {
+					'messageContextInfo': {
+						'deviceListMetadata': {},
+						'deviceListMetadataVersion': 2
+					},
+					interactiveMessage: proto.Message.InteractiveMessage.create({
+						...options,
+						body: proto.Message.InteractiveMessage.Body.create({
+							text: text
+						}),
+						footer: proto.Message.InteractiveMessage.Footer.create({
+							text: footer
+						}),
+						header: proto.Message.InteractiveMessage.Header.create({
+							title: "",
+							hasMediaAttachment: true,
+							...(await prepareWAMessageMedia(document, {
+								upload: dz.waUploadToServer
+							}))
+						}),
+						gifPlayback: true,
+						nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+							buttons: button,
+						})
+					})
+				}
+			}
+		}, {
+			quoted: quoted
+		})
+
+		await dz.relayMessage(msg.key.remoteJid, msg.message, {
+			messageId: msg.key.id
+		})
+		return msg
+	}
 ```
 
 > [!IMPORTANT]
